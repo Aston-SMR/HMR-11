@@ -501,56 +501,63 @@ if(['10','J','Q','K'].includes(card))return 0;
 return parseInt(card)||0;
 }
 
-function evaluateH(playerCards, bankerCards){
-if(playerCards.length<2||bankerCards.length<2){
-return {pick:'-',meta:'值:-'};
-}
+function evaluateH(playerCards, bankerCards) {
+  if (playerCards.length < 2 || bankerCards.length < 2) {
+    return {
+      pick:'待輸入',
+      meta:'HE值：-'
+    };
+  }
 
-function diffTwo(a,b){
-const x=getValue(a);
-const y=getValue(b);
-return Math.max(x,y)-Math.min(x,y);
-}
+  function val(card){
+    if(card === 'A') return 1;
+    if(['10','J','Q','K'].includes(card)) return 0;
+    return parseInt(card,10) || 0;
+  }
 
-const pBase=diffTwo(playerCards[0],playerCards[1]);
-const bBase=diffTwo(bankerCards[0],bankerCards[1]);
+  const p1 = val(playerCards[0]);
+  const p2 = val(playerCards[1]);
 
-let total=Math.max(pBase,bBase)-Math.min(pBase,bBase);
+  const b1 = val(bankerCards[0]);
+  const b2 = val(bankerCards[1]);
 
-const totalCards=playerCards.length+bankerCards.length;
+  const pDiff = Math.max(p1,p2) - Math.min(p1,p2);
+  const bDiff = Math.max(b1,b2) - Math.min(b1,b2);
 
-if(totalCards===4){
- total=total/2;
- total=total/2;
-}else{
- const pThird=playerCards[2]?getValue(playerCards[2])/2:null;
- const bThird=bankerCards[2]?getValue(bankerCards[2])/2:null;
+  let result = Math.max(pDiff,bDiff) - Math.min(pDiff,bDiff);
 
- if(pThird!==null&&bThird!==null){
-   total=total-(Math.max(pThird,bThird)-Math.min(pThird,bThird));
- }else if(pThird!==null){
-   total=total-pThird;
- }else if(bThird!==null){
-   total=total-bThird;
- }
-}
+  const playerThird = playerCards[2] ? val(playerCards[2]) / 2 : null;
+  const bankerThird = bankerCards[2] ? val(bankerCards[2]) / 2 : null;
 
-while(total>3){
- total=total/2;
-}
+  const totalCards = playerCards.length + bankerCards.length;
 
-let pick;
+  if(totalCards === 4){
+    result = result / 2;
+    result = result / 2;
+  }
+  else{
+    if(playerThird !== null && bankerThird !== null){
+      const thirdDiff = Math.max(playerThird, bankerThird) - Math.min(playerThird, bankerThird);
+      result = result - thirdDiff;
+    }
+    else if(playerThird !== null){
+      result = result - playerThird;
+    }
+    else if(bankerThird !== null){
+      result = result - bankerThird;
+    }
+  }
 
-if(total<=2){
- pick='閒';
-}else{
- pick='莊';
-}
+  if(result > 3){
+    result = result / 2;
+  }
 
-return {
- pick,
- meta:'值:'+total
-};
+  const pick = result <= 1.999999 ? '閒' : '莊';
+
+  return {
+    pick,
+    meta:'HE值：' + result.toFixed(2)
+  };
 }
 
 function evaluateM(playerCards, bankerCards, allCards){
